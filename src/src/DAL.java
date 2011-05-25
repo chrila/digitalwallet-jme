@@ -9,8 +9,8 @@ import javax.microedition.rms.RecordStoreNotFoundException;
  * Data Access Layer. This class provides read/write access to a RMS storage
  * for storing wallets.
  *
- * @author master
- * @version 2010.10.27
+ * @author Christian Lampl
+ * @version 2011.05.25
  */
 
 public class DAL

@@ -8,7 +8,7 @@ import java.util.Vector;
  * 
  * @see Expense
  * @author Christian Lampl
- * @version 2010.10.27
+ * @version 2011.05.25
  */
 public class Wallet
 {

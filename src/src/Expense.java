@@ -6,7 +6,7 @@ import java.util.Date;
  * Describes a "record", which represents an event where money was spent.
  * 
  * @author Christian Lampl
- * @version 2010.10.27
+ * @version 2011.05.25
  */
 public class Expense
 {

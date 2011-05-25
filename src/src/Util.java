@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * This class contains several static methods that are often used
  * @author Christian Lampl
- * @version 2010.11.05
+ * @version 2011.05.25
  */
 
 public final class Util

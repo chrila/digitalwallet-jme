@@ -10,8 +10,8 @@ import javax.microedition.rms.RecordStoreNotFoundException;
 /**
  * Forms of Digital Wallet.
  *
- * @author master
- * @version 2010.10.27
+ * @author Christian Lampl
+ * @version 2011.05.25
  */
 public class DigitalWallet extends MIDlet implements CommandListener {
 
