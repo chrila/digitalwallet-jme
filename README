@@ -1,0 +1,5 @@
+Development on DigitalWallet is done using NetBeans 7.0.
+
+Current specifications that DiWa will run on:
+- Device configuration: CLDC-1.1
+- Device profile: MIDP-2.0
