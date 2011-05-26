@@ -1,5 +1,36 @@
+----------------------------------------------------------------
+-- Digital Wallet                                             --
+-- (c)2010-2011 by Christian Lampl <mop@kaffeeschluerfer.com> --
+----------------------------------------------------------------
+
+----------------------------
+1. What is this program for?
+----------------------------
+
+The aim of DigitalWallet is to provide a tool with which you can collect all the expenses you make while you can also watch your budget. You should always be able to do this, thats why i chose JME.
+
+Future versions will include a function to export the expenses to a .csv-file (comma-separated values) which can be sent over bluetooth for further processing.
+
+--------------
+2. Development
+--------------
+
+-- 2.1 Introduction
+
 Development on DigitalWallet is done using NetBeans 7.0.
 
+
+-- 2.2 Specifications
+
 Current specifications that DiWa will run on:
-- Device configuration: CLDC-1.1
-- Device profile: MIDP-2.0
+* Device configuration: CLDC-1.1
+* Device profile: MIDP-2.0
+
+
+--- 2.3 Building DigitalWallet
+
+In order to build this project, you will need
+* JDK (tested with Sun's JDK 1.6.0_25)
+* Java ME Toolkit (previously known as Sun Wireless Toolkit)
+* NetBeans with JME Plugin
+
