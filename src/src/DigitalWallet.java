@@ -159,8 +159,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         // write post-switch user code here
     }//GEN-BEGIN:|5-switchDisplayable|2|
     //</editor-fold>//GEN-END:|5-switchDisplayable|2|
-    //</editor-fold>
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: frmMain ">//GEN-BEGIN:|14-getter|0|14-preInit
     /**
@@ -181,9 +179,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return frmMain;
     }
     //</editor-fold>//GEN-END:|14-getter|2|
-    //</editor-fold>
-    //</editor-fold>
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: frmExpense ">//GEN-BEGIN:|15-getter|0|15-preInit
     /**
@@ -202,9 +197,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return frmExpense;
     }
     //</editor-fold>//GEN-END:|15-getter|2|
-    //</editor-fold>
-    //</editor-fold>
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: tfExpenseValue ">//GEN-BEGIN:|17-getter|0|17-preInit
     /**
@@ -214,7 +206,7 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     public TextField getTfExpenseValue() {
         if (tfExpenseValue == null) {//GEN-END:|17-getter|0|17-preInit
             // write pre-init user code here
-            tfExpenseValue = new TextField("Value [EUR]", null, 32, TextField.DECIMAL);//GEN-LINE:|17-getter|1|17-postInit
+            tfExpenseValue = new TextField("Value", null, 32, TextField.DECIMAL);//GEN-LINE:|17-getter|1|17-postInit
             // write post-init user code here
         }//GEN-BEGIN:|17-getter|2|
         return tfExpenseValue;
@@ -263,6 +255,7 @@ public class DigitalWallet extends MIDlet implements CommandListener {
             if (command == cmdNewExpense) {//GEN-END:|7-commandAction|9|21-preAction
                 switchDisplayable(null, getFrmExpense());//GEN-LINE:|7-commandAction|10|21-postAction
                 dfExpenseDate.setDate(new Date(System.currentTimeMillis()));
+                tfExpenseValue.setLabel("Value ["+settings[1]+"]");
                 displayCategoryList(getChoiceExpenseCategory());
                 getDisplay().setCurrentItem(tfExpenseValue);
             } else if (command == cmdSettings) {//GEN-LINE:|7-commandAction|11|23-preAction
@@ -381,20 +374,17 @@ public class DigitalWallet extends MIDlet implements CommandListener {
             }//GEN-BEGIN:|7-commandAction|51|87-preAction
         } else if (displayable == tbEditValue) {
             if (command == cmdOk) {//GEN-END:|7-commandAction|51|87-preAction
-                // write pre-action user code here
+                if (__previousDisplayables.get(getDisplay().getCurrent()) == listSettings)
+                    settings[1]= tbEditValue.getString();
+                else if (__previousDisplayables.get(getDisplay().getCurrent()) == listManageCategories)
+                    listManageCategories.set(listManageCategories.getSelectedIndex(), tbEditValue.getString(), null);
                 switchToPreviousDisplayable();//GEN-LINE:|7-commandAction|52|87-postAction
-                listManageCategories.set(listManageCategories.getSelectedIndex(), tbEditValue.getString(), null);
+
             }//GEN-BEGIN:|7-commandAction|53|7-postCommandAction
         }//GEN-END:|7-commandAction|53|7-postCommandAction
         // write post-action user code here
     }//GEN-BEGIN:|7-commandAction|54|
     //</editor-fold>//GEN-END:|7-commandAction|54|
-
-
-
-
-    //</editor-fold>
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdNewExpense ">//GEN-BEGIN:|20-getter|0|20-preInit
     /**
@@ -410,9 +400,7 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return cmdNewExpense;
     }
     //</editor-fold>//GEN-END:|20-getter|2|
-    //</editor-fold>
-    //</editor-fold>
-
+ 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdSettings ">//GEN-BEGIN:|22-getter|0|22-preInit
     /**
      * Returns an initiliazed instance of cmdSettings component.
@@ -427,14 +415,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return cmdSettings;
     }
     //</editor-fold>//GEN-END:|22-getter|2|
-    //</editor-fold>
-    //</editor-fold>
-    //</editor-fold>
-    //</editor-fold>
-
-
-    //</editor-fold>
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: tfExpenseLocation ">//GEN-BEGIN:|25-getter|0|25-preInit
     /**
@@ -450,7 +430,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return tfExpenseLocation;
     }
     //</editor-fold>//GEN-END:|25-getter|2|
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdOk ">//GEN-BEGIN:|26-getter|0|26-preInit
     /**
@@ -466,7 +445,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return cmdOk;
     }
     //</editor-fold>//GEN-END:|26-getter|2|
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdCancel ">//GEN-BEGIN:|28-getter|0|28-preInit
     /**
@@ -482,13 +460,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return cmdCancel;
     }
     //</editor-fold>//GEN-END:|28-getter|2|
-    //</editor-fold>
-    //</editor-fold>
-
-
-    //</editor-fold>
-    //</editor-fold>
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: frmWallet ">//GEN-BEGIN:|35-getter|0|35-preInit
     /**
@@ -537,7 +508,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return lbSpent;
     }
     //</editor-fold>//GEN-END:|37-getter|2|
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: tfWalletName ">//GEN-BEGIN:|38-getter|0|38-preInit
     /**
@@ -553,8 +523,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return tfWalletName;
     }
     //</editor-fold>//GEN-END:|38-getter|2|
-    //</editor-fold>
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: choiceWalletBudgetType ">//GEN-BEGIN:|39-getter|0|39-preInit
     /**
@@ -574,7 +542,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return choiceWalletBudgetType;
     }
     //</editor-fold>//GEN-END:|39-getter|2|
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: tfWalletBudgetValue ">//GEN-BEGIN:|43-getter|0|43-preInit
     /**
@@ -590,11 +557,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return tfWalletBudgetValue;
     }
     //</editor-fold>//GEN-END:|43-getter|2|
-    //</editor-fold>
-    //</editor-fold>
-
-
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: dfExpenseDate ">//GEN-BEGIN:|52-getter|0|52-preInit
     /**
@@ -611,8 +573,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return dfExpenseDate;
     }
     //</editor-fold>//GEN-END:|52-getter|2|
-
-
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: listPrintWallet ">//GEN-BEGIN:|57-getter|0|57-preInit
     /**
@@ -643,8 +603,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         // enter post-action user code here
     }//GEN-BEGIN:|57-action|2|
     //</editor-fold>//GEN-END:|57-action|2|
-
-
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|66-getter|0|66-preInit
     /**
@@ -678,8 +636,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return alert;
     }
     //</editor-fold>//GEN-END:|69-getter|2|
-    //</editor-fold>
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: listManageCategories ">//GEN-BEGIN:|74-getter|0|74-preInit
     /**
@@ -711,9 +667,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         // enter post-action user code here
     }//GEN-BEGIN:|74-action|2|
     //</editor-fold>//GEN-END:|74-action|2|
-    //</editor-fold>
-
-
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: tbEditValue ">//GEN-BEGIN:|80-getter|0|80-preInit
     /**
@@ -731,7 +684,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return tbEditValue;
     }
     //</editor-fold>//GEN-END:|80-getter|2|
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdDeleteCategory ">//GEN-BEGIN:|81-getter|0|81-preInit
     /**
@@ -777,9 +729,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return cmdEditCategory;
     }
     //</editor-fold>//GEN-END:|85-getter|2|
-    //</editor-fold>
-
-
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: choiceExpenseCategory ">//GEN-BEGIN:|93-getter|0|93-preInit
     /**
@@ -807,7 +756,7 @@ public class DigitalWallet extends MIDlet implements CommandListener {
             listSettings = new List("Settings", Choice.IMPLICIT);//GEN-BEGIN:|109-getter|1|109-postInit
             listSettings.append("Manage categories", null);
             listSettings.append("Manage wallets", null);
-            listSettings.append("Set timezone", null);
+            listSettings.append("Set currency", null);
             listSettings.append("-RESET-", null);
             listSettings.append("About", null);
             listSettings.addCommand(getCmdBack());
@@ -840,9 +789,13 @@ public class DigitalWallet extends MIDlet implements CommandListener {
                 displayWalletList(getListManageWallets());
 //GEN-LINE:|109-action|4|113-postAction
                 // write post-action user code here
-            } else if (__selectedString.equals("Set timezone")) {//GEN-LINE:|109-action|5|114-preAction
-                // write pre-action user code here
-//GEN-LINE:|109-action|6|114-postAction
+            } else if (__selectedString.equals("Set currency")) {//GEN-LINE:|109-action|5|181-preAction
+                tbEditValue= getTbEditValue();
+                tbEditValue.setTitle("Currency to be used for display: ");
+                tbEditValue.setConstraints(javax.microedition.lcdui.TextField.ANY);
+                tbEditValue.setString(settings[1]);
+                switchDisplayable(null, tbEditValue);
+//GEN-LINE:|109-action|6|181-postAction
                 // write post-action user code here
             } else if (__selectedString.equals("-RESET-")) {//GEN-LINE:|109-action|7|179-preAction
                 resetDAL();
@@ -858,12 +811,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         // enter post-action user code here
     }//GEN-BEGIN:|109-action|12|
     //</editor-fold>//GEN-END:|109-action|12|
-
-
-
-
-
-
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: listManageWallets ">//GEN-BEGIN:|125-getter|0|125-preInit
     /**
@@ -944,7 +891,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return stringItem;
     }
     //</editor-fold>//GEN-END:|131-getter|2|
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: tfWalletOwner ">//GEN-BEGIN:|132-getter|0|132-preInit
     /**
@@ -1020,7 +966,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return cmdActivateWallet;
     }
     //</editor-fold>//GEN-END:|143-getter|2|
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: imgOk ">//GEN-BEGIN:|145-getter|0|145-preInit
     /**
@@ -1119,7 +1064,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         return imgError;
     }
     //</editor-fold>//GEN-END:|175-getter|3|
-    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdReset ">//GEN-BEGIN:|177-getter|0|177-preInit
     /**
@@ -1151,20 +1095,20 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     }
     //</editor-fold>//GEN-END:|180-getter|2|
 
-
-
     /**
      * Returns a display instance.
      * @return the display instance.
      */
-    public Display getDisplay () {
+    public Display getDisplay ()
+    {
         return Display.getDisplay(this);
     }
 
     /**
      * Exits MIDlet.
      */
-    public void exitMIDlet() {
+    public void exitMIDlet()
+    {
         try
         {
             dal.updateSettings(settings);
@@ -1183,10 +1127,13 @@ public class DigitalWallet extends MIDlet implements CommandListener {
      * Called when MIDlet is started.
      * Checks whether the MIDlet have been already started and initialize/starts or resumes the MIDlet.
      */
-    public void startApp() {
-        if (midletPaused) {
+    public void startApp()
+    {
+        if (midletPaused)
+        {
             resumeMIDlet ();
-        } else {
+        } else
+        {
             initialize ();
             startMIDlet ();
         }
@@ -1196,7 +1143,8 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     /**
      * Called when MIDlet is paused.
      */
-    public void pauseApp() {
+    public void pauseApp()
+    {
         midletPaused = true;
     }
 
@@ -1204,7 +1152,8 @@ public class DigitalWallet extends MIDlet implements CommandListener {
      * Called to signal the MIDlet to terminate.
      * @param unconditional if true, then the MIDlet has to be unconditionally terminated and all resources has to be released.
      */
-    public void destroyApp(boolean unconditional) {
+    public void destroyApp(boolean unconditional)
+    {
     }
 
     /**
@@ -1264,11 +1213,13 @@ public class DigitalWallet extends MIDlet implements CommandListener {
      */
     private boolean checkExpenseForm()
     {
-        if (tfExpenseValue.getString().equals("")) {
+        if (tfExpenseValue.getString().equals(""))
+        {
             displayError("Please enter a value!", getFrmExpense());
             return false;
         }
-        if (tfExpenseLocation.getString().equals("")) {
+        if (tfExpenseLocation.getString().equals(""))
+        {
             displayError("Please enter a location!", getFrmExpense());
             return false;
         }
@@ -1293,15 +1244,18 @@ public class DigitalWallet extends MIDlet implements CommandListener {
      */
     private boolean checkWalletForm()
     {
-        if (tfWalletName.getString().equals("")) {
+        if (tfWalletName.getString().equals(""))
+        {
             displayError("Please enter a name!", getFrmWallet());
             return false;
         }
-        if (tfWalletOwner.getString().equals("")) {
+        if (tfWalletOwner.getString().equals(""))
+        {
             displayError("Please enter an owner!", getFrmWallet());
             return false;
         }
-        if (tfWalletBudgetValue.getString().equals("")) {
+        if (tfWalletBudgetValue.getString().equals(""))
+        {
             displayError("Please enter a budget value!", getFrmWallet());
             return false;
         }
@@ -1316,9 +1270,9 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     {
         ch.deleteAll();
 
-        for (int i=0; i<wallet.getExpenses().size(); i++)
+        for (int i=wallet.getExpenses().size()-1; i>=0; i--)
         {
-            ch.append(wallet.getExpenses().elementAt(i).toString(), null);
+            ch.append("["+String.valueOf(i+1)+"] "+((Expense)wallet.getExpenses().elementAt(i)).toStringNice()+" "+settings[1], null);
         }
     }
 
@@ -1354,7 +1308,8 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         try
         {
             String[] walls= dal.getWalletList();
-            for (int i=0; i<walls.length; i++) {
+            for (int i=0; i<walls.length; i++)
+            {
                 if (walls[i].equals(settings[0]))
                     ch.append(walls[i]+" [active]", getImgOk());
                 else
@@ -1398,9 +1353,11 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     private void activateWallet(String walletString)
     {
         // we don't activate the already active wallet
-        if (walletString.equals(settings[0]+" [active]")) {
+        if (walletString.equals(settings[0]+" [active]"))
+        {
             return;
-        } else {
+        } else
+        {
             settings[0]= walletString;
             try
             {
@@ -1424,7 +1381,8 @@ public class DigitalWallet extends MIDlet implements CommandListener {
             dal.resetDataStore();
             settings= dal.getSettings();
             activateWallet(settings[0]);
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             displayError(e.getMessage(), getListSettings());
         }
     }
@@ -1443,7 +1401,8 @@ public class DigitalWallet extends MIDlet implements CommandListener {
             }
 
             dal.updateCategories(cats);
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             displayError(e.getMessage(), getListSettings());
         }
     }

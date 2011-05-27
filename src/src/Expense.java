@@ -77,12 +77,23 @@ public class Expense
     {    
         return String.valueOf(value) + "," + category + "," + location + "," + date;
     }
+    
+    /**
+     * Converts the record into a String in a nice format, to be displayed for the user
+     * @return nicely formatted String
+     */
+    public String toStringNice()
+    {
+        // return String.valueOf(value) + " at "+ location + " on " + date;
+        return date + ": " + location + ", " + String.valueOf(value);
+    }
 
     /**
      * Getter for value
      * @return the value of the expense
      */
-    public float getValue() {
+    public float getValue()
+    {
         return value;
     }
     
@@ -90,7 +101,8 @@ public class Expense
      * Getter for category
      * @return the category of the expense
      */
-    public String getCategory() {
+    public String getCategory()
+    {
         return category;
     }
     
@@ -98,7 +110,8 @@ public class Expense
      * Getter for location
      * @return the location the expense was taken at
      */
-    public String getLocation() {
+    public String getLocation()
+    {
         return location;
     }
     
@@ -106,7 +119,8 @@ public class Expense
      * Getter for date
      * @return the date on which the expense was taken
      */
-    public String getDate() {
+    public String getDate()
+    {
         return date;
     }
 
@@ -114,7 +128,8 @@ public class Expense
      * Setter for value
      * @param value the value of the expense
      */
-    public void setValue(float value) {
+    public void setValue(float value)
+    {
         this.value= value;
     }
     
@@ -122,7 +137,8 @@ public class Expense
      * Setter for category
      * @param category the category of the expense
      */
-    public void setCategory(String category) {
+    public void setCategory(String category)
+    {
         this.category= category;
     }
     
@@ -130,7 +146,8 @@ public class Expense
      * Setter for location
      * @param location the location the expense was taken at
      */
-    public void setLocation(String location) {
+    public void setLocation(String location)
+    {
         this.location= location;
     }
     
@@ -138,7 +155,8 @@ public class Expense
      * Setter for date
      * @param date the date the expense was taken on
      */
-    public void setDate(String date) {
+    public void setDate(String date)
+    {
         this.date= date;
     }
 }

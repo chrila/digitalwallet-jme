@@ -17,9 +17,9 @@ public final class Util
     
     /**
      * An array defining the standard settings values
-     * { Active wallet }
+     * { Active wallet, currency }
      */
-    public static final String[] DEFAULT_SETTINGS = {"User_default"};
+    public static final String[] DEFAULT_SETTINGS = {"User_default", "EUR"};
 
     /**
      * A default wallet to be stored in the DAL if none exists

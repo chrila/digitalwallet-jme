@@ -195,7 +195,7 @@ public class Wallet
     }
 
     /**
-     * Returns all records
+     * Returns all expenses
      * @return a Vector including all records
      */
     public Vector getExpenses()
@@ -252,8 +252,8 @@ public class Wallet
     }
 
     /**
-     * Reset the budget
-     * @param budget
+     * Setter for budget
+     * @param budget value of the budget
      */
     public void setBudget(float budget)
     {
@@ -261,8 +261,8 @@ public class Wallet
     }
 
     /**
-     * Re-set the budget type
-     * @param budgetType
+     * Setter for budgetType
+     * @param budgetType the type of the budget
      */
     public void setBudgetType(byte budgetType)
     {
@@ -270,8 +270,8 @@ public class Wallet
     }
 
     /**
-     * Re-set the name
-     * @param name
+     * Setter for name
+     * @param name the name of the wallet
      */
     public void setName(String name)
     {
@@ -279,8 +279,8 @@ public class Wallet
     }
 
     /**
-     * Re-set the owner
-     * @param owner
+     * Setter for owner
+     * @param owner the owner of the wallet
      */
     public void setOwner(String owner)
     {

@@ -228,9 +228,10 @@ public class DAL
     }
 
     /**
-     * Returns the settings in a string array
-     * @return a string array containing the settings {Selected Wallet}
+     * Reads the settings from the RecordStore
+     * @return a string array containing the settings
      * @throws Exception
+     * @see Util#DEFAULT_SETTINGS
      */
     public String[] getSettings() throws Exception
     {
@@ -239,13 +240,13 @@ public class DAL
             rs= RecordStore.openRecordStore("Settings", true);
             String[] settings= new String[rs.getNumRecords()];
 
-            int i=0;
+            int i=settings.length-1;
             RecordEnumeration re= rs.enumerateRecords(null, null, true);
 
             while (re.hasNextElement())
             {
                 settings[i]= new String(re.nextRecord());
-                i++;
+                i--;
             }
 
             rs.closeRecordStore();
@@ -292,6 +293,9 @@ public class DAL
     /**
      * Resets the whole DAL: delete all RecordStores and write default values
      * @throws Exception if anything doesn't quite work
+     * @see Util#DEFAULT_CATEGORIES
+     * @see Util#DEFAULT_SETTINGS
+     * @see Util#DEFAULT_WALLET
      */
     public void resetDataStore() throws Exception
     {
@@ -310,27 +314,28 @@ public class DAL
             updateCategories(Util.DEFAULT_CATEGORIES);
             updateSettings(Util.DEFAULT_SETTINGS);
             createWallet(Util.DEFAULT_WALLET);
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             throw e;
         }
     }
 
     /**
      * Checks if a given record store exists
-     * @param rsname the name of the record store to be checked
+     * @param rsname the name of the record store to be checked for existence
      * @return whether it exists
      */
     private boolean existsRecordStore(String rsname)
     {
         String[] list= RecordStore.listRecordStores();
 
-        if (list != null) {
+        if (list != null)
+        {
             for (int i=0; i<list.length; i++)
             {
                 if (list[i].equals(rsname))
                     return true;
             }
-
             return false;
         } else
             return false;
