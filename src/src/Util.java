@@ -27,6 +27,11 @@ public final class Util
     public static final Wallet DEFAULT_WALLET = new Wallet("default", "User", 100, Wallet.BUDGET_TYPE_MONTHLY);
 
     /**
+     * A String defining the header of the export-file (CSV)
+     */
+    public static final String FILE_HEADER = "Value,Category,Location,Date/Time";
+    
+    /**
      * Converts a date to a String of the form YYYYMMddhhmm
      * @param date a Date object
      * @return a String in the form YYYYMMddhhmm

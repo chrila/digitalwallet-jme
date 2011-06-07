@@ -29,9 +29,8 @@ public class DAL
      * @param walletName the wallet-file
      * @return a Wallet object containing the information from the file
      * @throws Exception if an error occurs
-     * @throws RecordStoreNotFoundException if no Wallet with @param walletName exists
      */
-    public Wallet readWallet(String walletName) throws RecordStoreNotFoundException, Exception
+    public Wallet readWallet(String walletName) throws Exception
     {
         try
         {
@@ -57,10 +56,6 @@ public class DAL
 
             rs.closeRecordStore();
             return w;
-        } catch (RecordStoreNotFoundException e)
-        {
-            rs.closeRecordStore();
-            throw e;
         } catch (Exception e)
         {
             rs.closeRecordStore();

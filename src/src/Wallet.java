@@ -152,14 +152,15 @@ public class Wallet
         String now= Util.dateToString(new Date(System.currentTimeMillis()));
         String elemDate;
 
-        System.out.println("Current date: "+now);
-        System.out.println("Criterium: start "+startIndex+", end "+endIndex);
+        // debugging output
+        //System.out.println("Current date: "+now);
+        //System.out.println("Criterium: start "+startIndex+", end "+endIndex);
 
         for (int i=0; i<expenses.size(); i++) {
             elemDate= ((Expense)(expenses.elementAt(i))).getDate();
             if (elemDate.substring(startIndex, endIndex).equals(now.substring(startIndex, endIndex))) {
                 sum+= ((Expense)(expenses.elementAt(i))).getValue();
-                System.out.println(elemDate.substring(startIndex, endIndex)+" = "+now.substring(startIndex, endIndex));
+                //System.out.println(elemDate.substring(startIndex, endIndex)+" = "+now.substring(startIndex, endIndex));
             }
         }
 

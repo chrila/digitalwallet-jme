@@ -1,11 +1,20 @@
 package src;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Vector;
-import javax.microedition.lcdui.Image;
+import javax.bluetooth.BluetoothStateException;
+import javax.bluetooth.DeviceClass;
+import javax.bluetooth.DiscoveryAgent;
+import javax.bluetooth.DiscoveryListener;
+import javax.bluetooth.LocalDevice;
+import javax.bluetooth.RemoteDevice;
+import javax.bluetooth.ServiceRecord;
+import javax.bluetooth.UUID;
 import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
-import javax.microedition.rms.RecordStoreNotFoundException;
+import org.netbeans.microedition.lcdui.WaitScreen;
+import org.netbeans.microedition.util.SimpleCancellableTask;
 
 /**
  * Forms of Digital Wallet.
@@ -13,13 +22,19 @@ import javax.microedition.rms.RecordStoreNotFoundException;
  * @author Christian Lampl
  * @version 2011.05.25
  */
-public class DigitalWallet extends MIDlet implements CommandListener {
+public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryListener {
 
     private boolean midletPaused = false;
     private Wallet wallet;
     private DAL dal;
     private String[] settings;
     private boolean editMode = false;
+    
+    private Vector devicesFound = null;
+    private ServiceRecord[] servicesFound = null;
+
+    private LocalDevice local = null;
+    private DiscoveryAgent agent = null;
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
     private java.util.Hashtable __previousDisplayables = new java.util.Hashtable();
@@ -46,12 +61,13 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     private List listManageWallets;
     private Form frmAbout;
     private StringItem stringItem;
-    private Form frmTimezone;
+    private List listBluetoothDevices;
+    private List listBluetoothServices;
+    private WaitScreen waitScreen;
     private Command cmdNewExpense;
     private Command cmdSettings;
     private Command cmdOk;
     private Command cmdCancel;
-    private Command exitCommand;
     private Command cmdEditCategory;
     private Command cmdDeleteCategory;
     private Command cmdNewCategory;
@@ -60,11 +76,14 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     private Command cmdDeleteWallet;
     private Command cmdActivateWallet;
     private Command cmdBack;
-    private Command okCommand;
     private Command cmdShowWallet;
     private Command cmdReset;
+    private Command cmdDiscoverDevices;
+    private Command cmdExit;
     private Image imgOk;
     private Image imgError;
+    private SimpleCancellableTask task;
+    private Image imgWait;
     //</editor-fold>//GEN-END:|fields|0|
 
     /**
@@ -171,8 +190,9 @@ public class DigitalWallet extends MIDlet implements CommandListener {
             frmMain = new Form("DigitalWallet", new Item[] { getLbActiveWallet(), getLbBudget(), getLbSpent(), getLbDifference() });//GEN-BEGIN:|14-getter|1|14-postInit
             frmMain.addCommand(getCmdNewExpense());
             frmMain.addCommand(getCmdSettings());
-            frmMain.addCommand(getExitCommand());
             frmMain.addCommand(getCmdShowWallet());
+            frmMain.addCommand(getCmdDiscoverDevices());
+            frmMain.addCommand(getCmdExit());
             frmMain.setCommandListener(this);//GEN-END:|14-getter|1|14-postInit
             // write post-init user code here
         }//GEN-BEGIN:|14-getter|2|
@@ -250,33 +270,39 @@ public class DigitalWallet extends MIDlet implements CommandListener {
                 }
 //GEN-LINE:|7-commandAction|8|27-postAction
                 // Save the entered Record
-            }//GEN-BEGIN:|7-commandAction|9|21-preAction
+            }//GEN-BEGIN:|7-commandAction|9|183-preAction
         } else if (displayable == frmMain) {
-            if (command == cmdNewExpense) {//GEN-END:|7-commandAction|9|21-preAction
-                switchDisplayable(null, getFrmExpense());//GEN-LINE:|7-commandAction|10|21-postAction
+            if (command == cmdDiscoverDevices) {//GEN-END:|7-commandAction|9|183-preAction
+
+//GEN-LINE:|7-commandAction|10|183-postAction
+                // discover bluetooth devices
+                doDeviceDiscovery();
+                displayWaitScreen("Discovering bluetooth devices...");
+            } else if (command == cmdExit) {//GEN-LINE:|7-commandAction|11|194-preAction
+                // write pre-action user code here
+                exitMIDlet();//GEN-LINE:|7-commandAction|12|194-postAction
+                // write post-action user code here
+            } else if (command == cmdNewExpense) {//GEN-LINE:|7-commandAction|13|21-preAction
+                switchDisplayable(null, getFrmExpense());//GEN-LINE:|7-commandAction|14|21-postAction
                 dfExpenseDate.setDate(new Date(System.currentTimeMillis()));
                 tfExpenseValue.setLabel("Value ["+settings[1]+"]");
                 displayCategoryList(getChoiceExpenseCategory());
                 getDisplay().setCurrentItem(tfExpenseValue);
-            } else if (command == cmdSettings) {//GEN-LINE:|7-commandAction|11|23-preAction
+            } else if (command == cmdSettings) {//GEN-LINE:|7-commandAction|15|23-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getListSettings());//GEN-LINE:|7-commandAction|12|23-postAction
+                switchDisplayable(null, getListSettings());//GEN-LINE:|7-commandAction|16|23-postAction
                 // write post-action user code here
-            } else if (command == cmdShowWallet) {//GEN-LINE:|7-commandAction|13|162-preAction
+            } else if (command == cmdShowWallet) {//GEN-LINE:|7-commandAction|17|162-preAction
                 printWallet(getListPrintWallet());
-                switchDisplayable(null, getListPrintWallet());//GEN-LINE:|7-commandAction|14|162-postAction
+                switchDisplayable(null, getListPrintWallet());//GEN-LINE:|7-commandAction|18|162-postAction
                 // write post-action user code here
-            } else if (command == exitCommand) {//GEN-LINE:|7-commandAction|15|67-preAction
-                // write pre-action user code here
-                exitMIDlet();//GEN-LINE:|7-commandAction|16|67-postAction
-                // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|17|135-preAction
+            }//GEN-BEGIN:|7-commandAction|19|135-preAction
         } else if (displayable == frmWallet) {
-            if (command == cmdCancel) {//GEN-END:|7-commandAction|17|135-preAction
+            if (command == cmdCancel) {//GEN-END:|7-commandAction|19|135-preAction
                 clearWalletForm();
-                switchDisplayable(null, getListManageWallets());//GEN-LINE:|7-commandAction|18|135-postAction
+                switchDisplayable(null, getListManageWallets());//GEN-LINE:|7-commandAction|20|135-postAction
                 // write post-action user code here
-            } else if (command == cmdOk) {//GEN-LINE:|7-commandAction|19|134-preAction
+            } else if (command == cmdOk) {//GEN-LINE:|7-commandAction|21|134-preAction
                 if (checkWalletForm()) {
                     // create new Wallet
                     createWallet();
@@ -284,55 +310,75 @@ public class DigitalWallet extends MIDlet implements CommandListener {
                     switchDisplayable(null, getListManageWallets());
                     displayWalletList(getListManageWallets());
                 }
-//GEN-LINE:|7-commandAction|20|134-postAction
+//GEN-LINE:|7-commandAction|22|134-postAction
 
-            }//GEN-BEGIN:|7-commandAction|21|75-preAction
-        } else if (displayable == listManageCategories) {
-            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|21|75-preAction
+            }//GEN-BEGIN:|7-commandAction|23|188-preAction
+        } else if (displayable == listBluetoothDevices) {
+            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|23|188-preAction
                 // write pre-action user code here
-                listManageCategoriesAction();//GEN-LINE:|7-commandAction|22|75-postAction
+                listBluetoothDevicesAction();//GEN-LINE:|7-commandAction|24|188-postAction
                 // write post-action user code here
-            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|23|167-preAction
+            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|25|191-preAction
+                // write pre-action user code here
+                switchDisplayable(null, getFrmMain());//GEN-LINE:|7-commandAction|26|191-postAction
+                // write post-action user code here
+            }//GEN-BEGIN:|7-commandAction|27|197-preAction
+        } else if (displayable == listBluetoothServices) {
+            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|27|197-preAction
+                // write pre-action user code here
+                listBluetoothServicesAction();//GEN-LINE:|7-commandAction|28|197-postAction
+                // write post-action user code here
+            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|29|199-preAction
+                // write pre-action user code here
+                switchDisplayable(null, getListBluetoothDevices());//GEN-LINE:|7-commandAction|30|199-postAction
+                // write post-action user code here
+            }//GEN-BEGIN:|7-commandAction|31|75-preAction
+        } else if (displayable == listManageCategories) {
+            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|31|75-preAction
+                // write pre-action user code here
+                listManageCategoriesAction();//GEN-LINE:|7-commandAction|32|75-postAction
+                // write post-action user code here
+            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|33|167-preAction
                 writeCategories();
-                switchDisplayable(null, getListSettings());//GEN-LINE:|7-commandAction|24|167-postAction
+                switchDisplayable(null, getListSettings());//GEN-LINE:|7-commandAction|34|167-postAction
                 // write post-action user code here
-            } else if (command == cmdDeleteCategory) {//GEN-LINE:|7-commandAction|25|82-preAction
+            } else if (command == cmdDeleteCategory) {//GEN-LINE:|7-commandAction|35|82-preAction
                 listManageCategories.delete(listManageCategories.getSelectedIndex());
-//GEN-LINE:|7-commandAction|26|82-postAction
+//GEN-LINE:|7-commandAction|36|82-postAction
                 // write post-action user code here
-            } else if (command == cmdEditCategory) {//GEN-LINE:|7-commandAction|27|86-preAction
+            } else if (command == cmdEditCategory) {//GEN-LINE:|7-commandAction|37|86-preAction
                 tbEditValue= getTbEditValue();
                 tbEditValue.setTitle("Enter new category name: ");
                 tbEditValue.setConstraints(javax.microedition.lcdui.TextField.ANY);
                 tbEditValue.setString(listManageCategories.getString(listManageCategories.getSelectedIndex()));
 
                 switchDisplayable(null, tbEditValue);
-//GEN-LINE:|7-commandAction|28|86-postAction
+//GEN-LINE:|7-commandAction|38|86-postAction
                 // write post-action user code here
-            } else if (command == cmdNewCategory) {//GEN-LINE:|7-commandAction|29|84-preAction
+            } else if (command == cmdNewCategory) {//GEN-LINE:|7-commandAction|39|84-preAction
                 listManageCategories.setSelectedIndex(listManageCategories.append("", null), true);
                 tbEditValue= getTbEditValue();
                 tbEditValue.setTitle("Enter new category name: ");
                 tbEditValue.setConstraints(javax.microedition.lcdui.TextField.ANY);
                 tbEditValue.setString("");
                 switchDisplayable(null, tbEditValue);
-//GEN-LINE:|7-commandAction|30|84-postAction
+//GEN-LINE:|7-commandAction|40|84-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|31|126-preAction
+            }//GEN-BEGIN:|7-commandAction|41|126-preAction
         } else if (displayable == listManageWallets) {
-            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|31|126-preAction
+            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|41|126-preAction
                 // write pre-action user code here
-                listManageWalletsAction();//GEN-LINE:|7-commandAction|32|126-postAction
+                listManageWalletsAction();//GEN-LINE:|7-commandAction|42|126-postAction
                 // write post-action user code here
-            } else if (command == cmdActivateWallet) {//GEN-LINE:|7-commandAction|33|144-preAction
+            } else if (command == cmdActivateWallet) {//GEN-LINE:|7-commandAction|43|144-preAction
                 activateWallet(listManageWallets.getString(listManageWallets.getSelectedIndex()));
-//GEN-LINE:|7-commandAction|34|144-postAction
+//GEN-LINE:|7-commandAction|44|144-postAction
                 // write post-action user code here
-            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|35|168-preAction
+            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|45|168-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getListSettings());//GEN-LINE:|7-commandAction|36|168-postAction
+                switchDisplayable(null, getListSettings());//GEN-LINE:|7-commandAction|46|168-postAction
                 // write post-action user code here
-            } else if (command == cmdDeleteWallet) {//GEN-LINE:|7-commandAction|37|141-preAction
+            } else if (command == cmdDeleteWallet) {//GEN-LINE:|7-commandAction|47|141-preAction
                 try
                 {
                     dal.deleteWallet(listManageWallets.getString(listManageWallets.getSelectedIndex()));
@@ -341,50 +387,64 @@ public class DigitalWallet extends MIDlet implements CommandListener {
                     displayError(e.getMessage(), getListManageWallets());
                 }
                 displayWalletList(listManageWallets);
-//GEN-LINE:|7-commandAction|38|141-postAction
+//GEN-LINE:|7-commandAction|48|141-postAction
                 // write post-action user code here
-            } else if (command == cmdEditWallet) {//GEN-LINE:|7-commandAction|39|139-preAction
+            } else if (command == cmdEditWallet) {//GEN-LINE:|7-commandAction|49|139-preAction
                 // write pre-action user code here
-//GEN-LINE:|7-commandAction|40|139-postAction
+//GEN-LINE:|7-commandAction|50|139-postAction
                 // write post-action user code here
-            } else if (command == cmdNewWallet) {//GEN-LINE:|7-commandAction|41|137-preAction
+            } else if (command == cmdNewWallet) {//GEN-LINE:|7-commandAction|51|137-preAction
                 getDisplay().setCurrent(getFrmWallet());
-//GEN-LINE:|7-commandAction|42|137-postAction
+//GEN-LINE:|7-commandAction|52|137-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|43|59-preAction
+            }//GEN-BEGIN:|7-commandAction|53|59-preAction
         } else if (displayable == listPrintWallet) {
-            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|43|59-preAction
+            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|53|59-preAction
                 // write pre-action user code here
-                listPrintWalletAction();//GEN-LINE:|7-commandAction|44|59-postAction
+                listPrintWalletAction();//GEN-LINE:|7-commandAction|54|59-postAction
                 // write post-action user code here
-            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|45|171-preAction
+            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|55|171-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getFrmMain());//GEN-LINE:|7-commandAction|46|171-postAction
+                switchDisplayable(null, getFrmMain());//GEN-LINE:|7-commandAction|56|171-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|47|110-preAction
+            }//GEN-BEGIN:|7-commandAction|57|110-preAction
         } else if (displayable == listSettings) {
-            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|47|110-preAction
+            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|57|110-preAction
                 // write pre-action user code here
-                listSettingsAction();//GEN-LINE:|7-commandAction|48|110-postAction
+                listSettingsAction();//GEN-LINE:|7-commandAction|58|110-postAction
                 // write post-action user code here
-            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|49|155-preAction
+            } else if (command == cmdBack) {//GEN-LINE:|7-commandAction|59|155-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getFrmMain());//GEN-LINE:|7-commandAction|50|155-postAction
+                switchDisplayable(null, getFrmMain());//GEN-LINE:|7-commandAction|60|155-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|51|87-preAction
+            }//GEN-BEGIN:|7-commandAction|61|87-preAction
         } else if (displayable == tbEditValue) {
-            if (command == cmdOk) {//GEN-END:|7-commandAction|51|87-preAction
+            if (command == cmdOk) {//GEN-END:|7-commandAction|61|87-preAction
                 if (__previousDisplayables.get(getDisplay().getCurrent()) == listSettings)
                     settings[1]= tbEditValue.getString();
                 else if (__previousDisplayables.get(getDisplay().getCurrent()) == listManageCategories)
                     listManageCategories.set(listManageCategories.getSelectedIndex(), tbEditValue.getString(), null);
-                switchToPreviousDisplayable();//GEN-LINE:|7-commandAction|52|87-postAction
+                switchToPreviousDisplayable();//GEN-LINE:|7-commandAction|62|87-postAction
 
-            }//GEN-BEGIN:|7-commandAction|53|7-postCommandAction
-        }//GEN-END:|7-commandAction|53|7-postCommandAction
+            }//GEN-BEGIN:|7-commandAction|63|205-preAction
+        } else if (displayable == waitScreen) {
+            if (command == WaitScreen.FAILURE_COMMAND) {//GEN-END:|7-commandAction|63|205-preAction
+                // write pre-action user code here
+//GEN-LINE:|7-commandAction|64|205-postAction
+                // write post-action user code here
+            } else if (command == WaitScreen.SUCCESS_COMMAND) {//GEN-LINE:|7-commandAction|65|204-preAction
+                // write pre-action user code here
+//GEN-LINE:|7-commandAction|66|204-postAction
+                // write post-action user code here
+            } else if (command == cmdCancel) {//GEN-LINE:|7-commandAction|67|208-preAction
+                // write pre-action user code here
+                switchToPreviousDisplayable();//GEN-LINE:|7-commandAction|68|208-postAction
+                // write post-action user code here
+            }//GEN-BEGIN:|7-commandAction|69|7-postCommandAction
+        }//GEN-END:|7-commandAction|69|7-postCommandAction
         // write post-action user code here
-    }//GEN-BEGIN:|7-commandAction|54|
-    //</editor-fold>//GEN-END:|7-commandAction|54|
+    }//GEN-BEGIN:|7-commandAction|70|
+    //</editor-fold>//GEN-END:|7-commandAction|70|
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdNewExpense ">//GEN-BEGIN:|20-getter|0|20-preInit
     /**
@@ -394,7 +454,7 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     public Command getCmdNewExpense() {
         if (cmdNewExpense == null) {//GEN-END:|20-getter|0|20-preInit
             // write pre-init user code here
-            cmdNewExpense = new Command("New Expense", "New Expense", Command.SCREEN, 1);//GEN-LINE:|20-getter|1|20-postInit
+            cmdNewExpense = new Command("New expense", "New expense", Command.SCREEN, 1);//GEN-LINE:|20-getter|1|20-postInit
             // write post-init user code here
         }//GEN-BEGIN:|20-getter|2|
         return cmdNewExpense;
@@ -603,21 +663,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         // enter post-action user code here
     }//GEN-BEGIN:|57-action|2|
     //</editor-fold>//GEN-END:|57-action|2|
-
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|66-getter|0|66-preInit
-    /**
-     * Returns an initiliazed instance of exitCommand component.
-     * @return the initialized component instance
-     */
-    public Command getExitCommand() {
-        if (exitCommand == null) {//GEN-END:|66-getter|0|66-preInit
-            // write pre-init user code here
-            exitCommand = new Command("Exit", "Exit", Command.EXIT, 4);//GEN-LINE:|66-getter|1|66-postInit
-            // write post-init user code here
-        }//GEN-BEGIN:|66-getter|2|
-        return exitCommand;
-    }
-    //</editor-fold>//GEN-END:|66-getter|2|
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alert ">//GEN-BEGIN:|69-getter|0|69-preInit
     /**
@@ -844,21 +889,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     }//GEN-BEGIN:|125-action|2|
     //</editor-fold>//GEN-END:|125-action|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: frmTimezone ">//GEN-BEGIN:|128-getter|0|128-preInit
-    /**
-     * Returns an initiliazed instance of frmTimezone component.
-     * @return the initialized component instance
-     */
-    public Form getFrmTimezone() {
-        if (frmTimezone == null) {//GEN-END:|128-getter|0|128-preInit
-            // write pre-init user code here
-            frmTimezone = new Form("form");//GEN-LINE:|128-getter|1|128-postInit
-            // write post-init user code here
-        }//GEN-BEGIN:|128-getter|2|
-        return frmTimezone;
-    }
-    //</editor-fold>//GEN-END:|128-getter|2|
-
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: frmAbout ">//GEN-BEGIN:|129-getter|0|129-preInit
     /**
      * Returns an initiliazed instance of frmAbout component.
@@ -1001,21 +1031,6 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     }
     //</editor-fold>//GEN-END:|154-getter|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: okCommand ">//GEN-BEGIN:|157-getter|0|157-preInit
-    /**
-     * Returns an initiliazed instance of okCommand component.
-     * @return the initialized component instance
-     */
-    public Command getOkCommand() {
-        if (okCommand == null) {//GEN-END:|157-getter|0|157-preInit
-            // write pre-init user code here
-            okCommand = new Command("Ok", Command.OK, 0);//GEN-LINE:|157-getter|1|157-postInit
-            // write post-init user code here
-        }//GEN-BEGIN:|157-getter|2|
-        return okCommand;
-    }
-    //</editor-fold>//GEN-END:|157-getter|2|
-
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: lbActiveWallet ">//GEN-BEGIN:|163-getter|0|163-preInit
     /**
      * Returns an initiliazed instance of lbActiveWallet component.
@@ -1088,12 +1103,173 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     public StringItem getLbDifference() {
         if (lbDifference == null) {//GEN-END:|180-getter|0|180-preInit
             // write pre-init user code here
-            lbDifference = new StringItem("Left:", null);//GEN-LINE:|180-getter|1|180-postInit
+            lbDifference = new StringItem("Left:", null, Item.PLAIN);//GEN-LINE:|180-getter|1|180-postInit
             // write post-init user code here
         }//GEN-BEGIN:|180-getter|2|
         return lbDifference;
     }
     //</editor-fold>//GEN-END:|180-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdDiscoverDevices ">//GEN-BEGIN:|182-getter|0|182-preInit
+    /**
+     * Returns an initiliazed instance of cmdDiscoverDevices component.
+     * @return the initialized component instance
+     */
+    public Command getCmdDiscoverDevices() {
+        if (cmdDiscoverDevices == null) {//GEN-END:|182-getter|0|182-preInit
+            // write pre-init user code here
+            cmdDiscoverDevices = new Command("Discover devices", "Discover devices", Command.SCREEN, 4);//GEN-LINE:|182-getter|1|182-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|182-getter|2|
+        return cmdDiscoverDevices;
+    }
+    //</editor-fold>//GEN-END:|182-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: listBluetoothDevices ">//GEN-BEGIN:|187-getter|0|187-preInit
+    /**
+     * Returns an initiliazed instance of listBluetoothDevices component.
+     * @return the initialized component instance
+     */
+    public List getListBluetoothDevices() {
+        if (listBluetoothDevices == null) {//GEN-END:|187-getter|0|187-preInit
+            // write pre-init user code here
+            listBluetoothDevices = new List("Discovered bluetooth devices", Choice.IMPLICIT);//GEN-BEGIN:|187-getter|1|187-postInit
+            listBluetoothDevices.addCommand(getCmdBack());
+            listBluetoothDevices.setCommandListener(this);//GEN-END:|187-getter|1|187-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|187-getter|2|
+        return listBluetoothDevices;
+    }
+    //</editor-fold>//GEN-END:|187-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Method: listBluetoothDevicesAction ">//GEN-BEGIN:|187-action|0|187-preAction
+    /**
+     * Performs an action assigned to the selected list element in the listBluetoothDevices component.
+     */
+    public void listBluetoothDevicesAction() {//GEN-END:|187-action|0|187-preAction
+        // enter pre-action user code here
+        String __selectedString = getListBluetoothDevices().getString(getListBluetoothDevices().getSelectedIndex());//GEN-LINE:|187-action|1|187-postAction
+        // show waitscreen while services are being discovered
+        displayWaitScreen("Discovering services on "+__selectedString);
+        try
+        {
+            for (int i= 0; i<devicesFound.size(); i++)
+            {
+                if (((RemoteDevice)devicesFound.elementAt(i)).getFriendlyName(true).equals(__selectedString))
+                {
+                    doServiceSearch((RemoteDevice)devicesFound.elementAt(i));
+                }
+            }
+        } catch (IOException e)
+        {
+            displayError(e.getMessage(), frmMain);
+        }
+    }//GEN-BEGIN:|187-action|2|
+    //</editor-fold>//GEN-END:|187-action|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdExit ">//GEN-BEGIN:|193-getter|0|193-preInit
+    /**
+     * Returns an initiliazed instance of cmdExit component.
+     * @return the initialized component instance
+     */
+    public Command getCmdExit() {
+        if (cmdExit == null) {//GEN-END:|193-getter|0|193-preInit
+            // write pre-init user code here
+            cmdExit = new Command("Exit", "Exit", Command.EXIT, 0);//GEN-LINE:|193-getter|1|193-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|193-getter|2|
+        return cmdExit;
+    }
+    //</editor-fold>//GEN-END:|193-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: listBluetoothServices ">//GEN-BEGIN:|196-getter|0|196-preInit
+    /**
+     * Returns an initiliazed instance of listBluetoothServices component.
+     * @return the initialized component instance
+     */
+    public List getListBluetoothServices() {
+        if (listBluetoothServices == null) {//GEN-END:|196-getter|0|196-preInit
+            // write pre-init user code here
+            listBluetoothServices = new List("Services", Choice.IMPLICIT);//GEN-BEGIN:|196-getter|1|196-postInit
+            listBluetoothServices.addCommand(getCmdBack());
+            listBluetoothServices.setCommandListener(this);
+            listBluetoothServices.setFitPolicy(Choice.TEXT_WRAP_DEFAULT);//GEN-END:|196-getter|1|196-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|196-getter|2|
+        return listBluetoothServices;
+    }
+    //</editor-fold>//GEN-END:|196-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Method: listBluetoothServicesAction ">//GEN-BEGIN:|196-action|0|196-preAction
+    /**
+     * Performs an action assigned to the selected list element in the listBluetoothServices component.
+     */
+    public void listBluetoothServicesAction() {//GEN-END:|196-action|0|196-preAction
+        // enter pre-action user code here
+        String __selectedString = getListBluetoothServices().getString(getListBluetoothServices().getSelectedIndex());//GEN-LINE:|196-action|1|196-postAction
+        // enter post-action user code here
+    }//GEN-BEGIN:|196-action|2|
+    //</editor-fold>//GEN-END:|196-action|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: waitScreen ">//GEN-BEGIN:|201-getter|0|201-preInit
+    /**
+     * Returns an initiliazed instance of waitScreen component.
+     * @return the initialized component instance
+     */
+    public WaitScreen getWaitScreen() {
+        if (waitScreen == null) {//GEN-END:|201-getter|0|201-preInit
+            // write pre-init user code here
+            waitScreen = new WaitScreen(getDisplay());//GEN-BEGIN:|201-getter|1|201-postInit
+            waitScreen.setTitle("Please wait...");
+            waitScreen.addCommand(getCmdCancel());
+            waitScreen.setCommandListener(this);
+            waitScreen.setImage(getImgWait());
+            waitScreen.setText("Please wait...");
+            waitScreen.setTask(getTask());//GEN-END:|201-getter|1|201-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|201-getter|2|
+        return waitScreen;
+    }
+    //</editor-fold>//GEN-END:|201-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: task ">//GEN-BEGIN:|206-getter|0|206-preInit
+    /**
+     * Returns an initiliazed instance of task component.
+     * @return the initialized component instance
+     */
+    public SimpleCancellableTask getTask() {
+        if (task == null) {//GEN-END:|206-getter|0|206-preInit
+            // write pre-init user code here
+            task = new SimpleCancellableTask();//GEN-BEGIN:|206-getter|1|206-execute
+            task.setExecutable(new org.netbeans.microedition.util.Executable() {
+                public void execute() throws Exception {//GEN-END:|206-getter|1|206-execute
+                    // write task-execution user code here
+                }//GEN-BEGIN:|206-getter|2|206-postInit
+            });//GEN-END:|206-getter|2|206-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|206-getter|3|
+        return task;
+    }
+    //</editor-fold>//GEN-END:|206-getter|3|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: imgWait ">//GEN-BEGIN:|207-getter|0|207-preInit
+    /**
+     * Returns an initiliazed instance of imgWait component.
+     * @return the initialized component instance
+     */
+    public Image getImgWait() {
+        if (imgWait == null) {//GEN-END:|207-getter|0|207-preInit
+            // write pre-init user code here
+            try {//GEN-BEGIN:|207-getter|1|207-@java.io.IOException
+                imgWait = Image.createImage("/wait.png");
+            } catch (java.io.IOException e) {//GEN-END:|207-getter|1|207-@java.io.IOException
+                e.printStackTrace();
+            }//GEN-LINE:|207-getter|2|207-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|207-getter|3|
+        return imgWait;
+    }
+    //</editor-fold>//GEN-END:|207-getter|3|
 
     /**
      * Returns a display instance.
@@ -1298,7 +1474,7 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     }
 
     /**
-     * Print out the categories
+     * Print out the wallets
      * @param ch The Item implementing the Choice interface
      * @see Choice
      */
@@ -1317,8 +1493,7 @@ public class DigitalWallet extends MIDlet implements CommandListener {
             }
         } catch (Exception e)
         {
-            //displayError(e.getMessage());
-            System.out.println(e.getMessage());
+            displayError(e.getMessage(), getListSettings());
         }
     }
 
@@ -1335,7 +1510,7 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     }
 
     /**
-     * For handling error messages
+     * For displaying error messages
      * @param msg The error to be displayed
      */
     private void displayError(String msg, Displayable nextDisplayable)
@@ -1345,7 +1520,13 @@ public class DigitalWallet extends MIDlet implements CommandListener {
         switchDisplayable(alert, nextDisplayable);
         System.out.println("ERROR: "+msg);
     }
-
+    
+    private void displayWaitScreen(String msg)
+    {
+        getWaitScreen().setText(msg);
+        switchDisplayable(null, getWaitScreen());
+    }
+    
     /**
      * Tries to activate a wallet (=read wallet from DAL)
      * @param walletString the unique identifier of the wallet
@@ -1372,7 +1553,7 @@ public class DigitalWallet extends MIDlet implements CommandListener {
     }
 
     /**
-     * Resets the DATA to default values
+     * Resets the DAL to default values
      */
     private void resetDAL()
     {
@@ -1406,4 +1587,156 @@ public class DigitalWallet extends MIDlet implements CommandListener {
             displayError(e.getMessage(), getListSettings());
         }
     }
+    
+    /**
+     * Lists all the discovered bluetooth-devices in the listBluetoothDevices
+     */
+    private void displayDiscoveredDevices()
+    {
+        getListBluetoothDevices().deleteAll();
+        
+        try
+        {
+            for (int i= 0; i<devicesFound.size(); i++)
+                getListBluetoothDevices().append(((RemoteDevice)devicesFound.elementAt(i)).getFriendlyName(true), null);
+        } catch (IOException e)
+        {
+            displayError(e.getMessage(), getListBluetoothDevices());
+        }
+        
+        switchDisplayable(null, getListBluetoothDevices());
+    }
+    
+    private void displayDiscoveredServices()
+    {
+        getListBluetoothServices().deleteAll();
+        
+        try
+        {
+            for (int i= 0; i<servicesFound.length; i++)
+            {
+                getListBluetoothServices().append(servicesFound[i].getAttributeValue(0x100).getValue().toString(), null);
+            }
+        } catch (Exception e)
+        {
+            displayError(e.getMessage(), getListBluetoothDevices());
+        }
+        
+        switchDisplayable(null, getListBluetoothServices());
+    }
+    
+    /**
+     * Start discovering bluetooth-devices
+     */
+    private void doDeviceDiscovery()
+    {
+        try
+        {
+            local = LocalDevice.getLocalDevice();
+        } catch (BluetoothStateException bse)
+        {
+            displayError(bse.getMessage(), getFrmMain());
+        }
+        
+        agent = local.getDiscoveryAgent();
+        devicesFound = new Vector();
+        
+        try
+        {
+            if(!agent.startInquiry(DiscoveryAgent.GIAC,this))
+                displayError("Could not start device discovery, aborting.", getFrmMain());       
+        } catch(BluetoothStateException bse)
+        {
+            displayError(bse.getMessage(), getFrmMain());
+        }
+    }
+    
+    private void doServiceSearch(RemoteDevice device)
+    {
+        /*
+         * Service search will always give the default attributes:
+         * ServiceRecordHandle (0x0000), ServiceClassIDList (0x0001),
+         * ServiceRecordState (0x0002), ServiceID (0x0003) and
+         * ProtocolDescriptorList (0x004).
+         *
+         * We want additional attributes, ServiceName (0x100),
+         * ServiceDescription (0x101) and ProviderName (0x102).
+         *
+         * These hex-values must be supplied through an int array
+         */
+        int[] attributes = {0x100,0x101,0x102};
+        /*
+         * Supplying UUIDs in an UUID array enables searching for
+         * specific services. PublicBrowseRoot (0x1002) is used in
+
+         * this example. This will return any services that are
+         * public browseable. When searching for a specific service,
+         * the service's UUID should be supplied here.
+         */
+        UUID[] uuids = new UUID[1];
+        uuids[0] = new UUID(0x1002);
+
+        try
+        {
+            agent.searchServices(attributes,uuids,device,this);
+        } catch (BluetoothStateException e)
+        {
+            displayError(e.getMessage(), getFrmMain());
+        }
+    }
+    
+    public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod)
+    {
+        devicesFound.addElement(btDevice);
+    }
+
+    public void servicesDiscovered(int transID, ServiceRecord[] servRecord)
+    {
+        servicesFound= servRecord;
+    }
+
+    public void serviceSearchCompleted(int transID, int respCode)
+    {
+        switch(respCode)
+        {
+            case DiscoveryListener.SERVICE_SEARCH_COMPLETED:
+                displayDiscoveredServices();
+                break;
+                
+            case DiscoveryListener.SERVICE_SEARCH_DEVICE_NOT_REACHABLE:
+                displayError("Device not reachable.", getFrmMain());
+                break;
+                
+            case DiscoveryListener.SERVICE_SEARCH_ERROR:
+                displayError("Service search error.", getFrmMain());
+                break;
+                
+            case DiscoveryListener.SERVICE_SEARCH_NO_RECORDS:
+                displayError("No services available.", getFrmMain());
+                break;
+                
+            case DiscoveryListener.SERVICE_SEARCH_TERMINATED:
+                displayError("Service search terminated.", getFrmMain());
+                break;
+        }
+    }
+
+    public void inquiryCompleted(int discType)
+    {
+        switch (discType)
+        {
+            case DiscoveryListener.INQUIRY_COMPLETED:
+                displayDiscoveredDevices();                
+                break;
+                
+            case DiscoveryListener.INQUIRY_ERROR:
+                displayError("An error occurred.", getFrmMain());
+                break;
+            
+            case DiscoveryListener.INQUIRY_TERMINATED:
+                displayError("Inquiry terminated.", getFrmMain());
+                break;
+        }
+    }
+
 }
