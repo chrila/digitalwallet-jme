@@ -3,8 +3,7 @@ package src;
 import java.util.Date;
 
 /**
- * Describes a "record", which represents an event where money was spent.
- * 
+ * Describes an "expense", which represents an event where money was spent.
  * @author Christian Lampl
  * @version 2011.05.25
  */
@@ -79,13 +78,57 @@ public class Expense
     }
     
     /**
-     * Converts the record into a String in a nice format, to be displayed for the user
+     * Converts the record into a formatted String
+     * Fields: %v (value), %c (category), %l (location), %d (date)
+     * @param format the format string containing fields (see above)
      * @return nicely formatted String
      */
-    public String toStringNice()
+    public String toString(String format)
     {
-        // return String.valueOf(value) + " at "+ location + " on " + date;
-        return date + ": " + location + ", " + String.valueOf(value);
+        StringBuffer result= new StringBuffer();
+        format.trim();
+        char c;
+        
+        // go through format-String
+        for (int i= 0; i<format.length(); i++)
+        {
+            c= format.charAt(i);
+            if ((c == '%') && (i < format.length()-1))
+            {
+                switch (format.charAt(i+1))
+                {
+                    // if a reasonable field is found, replace it with the corresponding value and skip the next character
+                    case 'v':
+                        result.append(value);
+                        i++;
+                        break;
+                        
+                    case 'c':
+                        result.append(category);
+                        i++;
+                        break;
+                        
+                    case 'l':
+                        result.append(location);
+                        i++;
+                        break;
+                        
+                    case 'd':
+                        result.append(date);
+                        i++;
+                        break;
+                        
+                    default:
+                        result.append(format.charAt(i));
+                        break;
+                }
+            } else
+            {
+                result.append(format.charAt(i));
+            }
+        }
+        
+        return result.toString();
     }
 
     /**

@@ -5,7 +5,6 @@ import java.util.Vector;
 
 /**
  * Describes a "wallet", which contains expenses.
- * 
  * @see Expense
  * @author Christian Lampl
  * @version 2011.05.25

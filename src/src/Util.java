@@ -1,6 +1,7 @@
 package src;
 
 import java.util.Date;
+import java.util.Hashtable;
 
 /**
  * This class contains several static methods that are often used
@@ -11,21 +12,75 @@ import java.util.Date;
 public final class Util
 {
     /**
+     * The attributes of an Expense and its corresponding fields
+     */
+    public static final Hashtable FIELDS;
+    
+    static
+    {
+        FIELDS= new Hashtable();
+        FIELDS.put("Value", "%v");
+        FIELDS.put("Category", "%c");
+        FIELDS.put("Location", "%l");
+        FIELDS.put("Date", "%d");
+    }
+    
+    /**
+     * Edit-mode category
+     */
+    public static final int EDIT_MODE_CATEGORY = 0;
+    
+    /**
+     * Edit-mode currency
+     */
+    public static final int EDIT_MODE_CURRENCY = 1;
+    
+    /**
+     * Edit-mode display format for expense
+     */
+    public static final int EDIT_MODE_FORMAT = 2;
+    
+    /**
+     * The default currency to be displayed
+     */
+    public static final String DEFAULT_CURR = "EUR";
+    
+    /**
+     * The owner of the default wallet
+     */
+    public static final String DEFAULT_OWNER_NAME = "User";
+    
+    /**
+     * The name of the default wallet
+     */
+    public static final String DEFAULT_WALLET_NAME = "Wallet";
+    
+    /**
      * An array defining the standard categories to be used by default
      */
     public static final String[] DEFAULT_CATEGORIES = {"Food", "Clothes", "Transport", "School", "Office"};
     
     /**
-     * An array defining the standard settings values
-     * { Active wallet, currency }
+     * The default output format of an expense
      */
-    public static final String[] DEFAULT_SETTINGS = {"User_default", "EUR"};
+    public static final String DEFAULT_EXPENSE_OUTPUT_FORMAT = "%v spent in %l on %d";
+    
+    /**
+     * An array defining the standard settings values
+     * { Active wallet, currency, expense output format }
+     */
+    public static final String[] DEFAULT_SETTINGS = {DEFAULT_OWNER_NAME+"_"+DEFAULT_WALLET_NAME,
+                                                     DEFAULT_CURR,
+                                                     DEFAULT_EXPENSE_OUTPUT_FORMAT};
 
     /**
      * A default wallet to be stored in the DAL if none exists
      */
-    public static final Wallet DEFAULT_WALLET = new Wallet("default", "User", 100, Wallet.BUDGET_TYPE_MONTHLY);
-
+    public static final Wallet DEFAULT_WALLET = new Wallet(DEFAULT_WALLET_NAME,
+                                                           DEFAULT_OWNER_NAME,
+                                                           100,
+                                                           Wallet.BUDGET_TYPE_MONTHLY);
+ 
     /**
      * A String defining the header of the export-file (CSV)
      */
