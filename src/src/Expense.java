@@ -13,7 +13,7 @@ public class Expense
     private String category;
     private String location;
     /**
-     * The date in the form: YYYYMMddhhmm
+     * The date in the form: YYYY-MM-dd hh:mm
      */
     private String date;
 
