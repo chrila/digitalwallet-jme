@@ -12,7 +12,6 @@ import javax.bluetooth.LocalDevice;
 import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
 import javax.bluetooth.UUID;
-import javax.microedition.content.ActionNameMap;
 import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
 import org.netbeans.microedition.lcdui.WaitScreen;
@@ -32,6 +31,9 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
     private String[] settings;
     
     private int editMode = -1;
+    private Expense currExp= null;
+    private int currExpIndex= -1;
+    private boolean editWallet= false;
     
     // For bluetooth
     private Vector devicesFound= null;
@@ -70,8 +72,8 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
     private WaitScreen waitScreen;
     private List listFormatFields;
     private Form frmConfirmationDialog;
-    private StringItem stringItem;
     private ImageItem imageItemInformation;
+    private StringItem stringItem;
     private Command cmdNewExpense;
     private Command cmdSettings;
     private Command cmdOk;
@@ -89,8 +91,8 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
     private Command cmdSendWallet;
     private Command cmdExit;
     private Command cmdInsertField;
-    private Command cmdYes;
     private Command cmdNo;
+    private Command cmdYes;
     private Image imgOk;
     private Image imgError;
     private Image imgWait;
@@ -246,7 +248,7 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
     public TextField getTfExpenseValue() {
         if (tfExpenseValue == null) {//GEN-END:|17-getter|0|17-preInit
             // write pre-init user code here
-            tfExpenseValue = new TextField("Value", null, 32, TextField.DECIMAL);//GEN-LINE:|17-getter|1|17-postInit
+            tfExpenseValue = new TextField("Value ["+settings[1]+"]", null, 32, TextField.DECIMAL);//GEN-LINE:|17-getter|1|17-postInit
             // write post-init user code here
         }//GEN-BEGIN:|17-getter|2|
         return tfExpenseValue;
@@ -263,7 +265,7 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
         // write pre-action user code here
         if (displayable == alert) {//GEN-BEGIN:|7-commandAction|1|72-preAction
             if (command == cmdOk) {//GEN-END:|7-commandAction|1|72-preAction
-                // write pre-action user code here
+                midletPaused= false;
                 switchToPreviousDisplayable();//GEN-LINE:|7-commandAction|2|72-postAction
                 // write post-action user code here
             }//GEN-BEGIN:|7-commandAction|3|173-preAction
@@ -289,12 +291,39 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
                 switchDisplayable(null, getFrmMain());//GEN-LINE:|7-commandAction|10|29-postAction
                 // write post-action user code here
             } else if (command == cmdOk) {//GEN-LINE:|7-commandAction|11|27-preAction
-                if (checkExpenseForm()) {
-                    // create new Expense
-                    createExpense();
-                    // clear Form
-                    clearExpenseForm();
-                    switchDisplayable(null, getFrmMain());
+                if (checkExpenseForm())
+                {
+                    if (currExp != null)
+                    {
+                        // update the editet Expense (currExp)
+                        currExp.setValue(Float.parseFloat(getTfExpenseValue().getString()));
+                        currExp.setLocation(getTfExpenseLocation().getString());
+                        currExp.setCategory(getChoiceExpenseCategory().getString(getChoiceExpenseCategory().getSelectedIndex()));
+                        currExp.setDate(Util.dateToString(getDfExpenseDate().getDate()));
+                        wallet.updateExpense(currExp, currExpIndex);
+                        try
+                        {
+                            dal.updateWallet(wallet);
+                            displayWallet();
+                        } catch (Exception e)
+                        {
+                            displayError(e.getMessage(), getFrmExpense());
+                        }
+                        
+                        currExp= null;
+                        currExpIndex= -1;
+                        clearExpenseForm();
+                        printWallet(getListPrintWallet());
+                        switchDisplayable(null, getListPrintWallet());
+                        
+                    } else
+                    {
+                        // create new Expense
+                        createExpense();
+                        // clear Form
+                        clearExpenseForm();
+                        switchDisplayable(null, getFrmMain());
+                    }
                 }
 //GEN-LINE:|7-commandAction|12|27-postAction
                 // Save the entered Record
@@ -331,11 +360,35 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
                 // write post-action user code here
             } else if (command == cmdOk) {//GEN-LINE:|7-commandAction|25|134-preAction
                 if (checkWalletForm()) {
-                    // create new Wallet
-                    createWallet();
-                    clearWalletForm();
-                    switchDisplayable(null, getListManageWallets());
-                    displayWalletList(getListManageWallets());
+                    if (editWallet)
+                    {
+                        try
+                        {
+                            dal.deleteWallet(Util.createStoreName(wallet));
+                            
+                            wallet.setName(getTfWalletName().getString());
+                            wallet.setOwner(getTfWalletOwner().getString());
+                            wallet.setBudget(Float.parseFloat(getTfWalletBudgetValue().getString()));
+                            wallet.setBudgetType((byte)getChoiceWalletBudgetType().getSelectedIndex());
+
+                            dal.writeWallet(wallet);
+                            editWallet= false;
+                            clearWalletForm();
+                            activateWallet(Util.createStoreName(wallet));
+                            switchDisplayable(null, getListManageWallets());
+                            displayWalletList(getListManageWallets());
+                        } catch (Exception e)
+                        {
+                            displayError(e.getMessage(), getListManageWallets());
+                        }
+                    } else
+                    {
+                        // create new Wallet
+                        createWallet();
+                        clearWalletForm();
+                        switchDisplayable(null, getListManageWallets());
+                        displayWalletList(getListManageWallets());
+                    }
                 }
 //GEN-LINE:|7-commandAction|26|134-postAction
             }//GEN-BEGIN:|7-commandAction|27|188-preAction
@@ -401,20 +454,37 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
                 switchDisplayable(null, getListSettings());//GEN-LINE:|7-commandAction|48|168-postAction
                 // write post-action user code here
             } else if (command == cmdDeleteWallet) {//GEN-LINE:|7-commandAction|49|141-preAction
-                try
+                if (!listManageWallets.getString(listManageWallets.getSelectedIndex()).endsWith("[active]"))
                 {
-                    dal.deleteWallet(listManageWallets.getString(listManageWallets.getSelectedIndex()));
-                } catch (Exception e)
+                    try
+                    {
+                        dal.deleteWallet(listManageWallets.getString(listManageWallets.getSelectedIndex()));
+                    } catch (Exception e)
+                    {
+                        displayError(e.getMessage(), getListManageWallets());
+                    }
+                    displayWalletList(listManageWallets);
+                } else
                 {
-                    displayError(e.getMessage(), getListManageWallets());
+                    displayError("You cannot delete the active wallet!", getListManageWallets());
                 }
-                displayWalletList(listManageWallets);
 //GEN-LINE:|7-commandAction|50|141-postAction
                 // write post-action user code here
             } else if (command == cmdEditWallet) {//GEN-LINE:|7-commandAction|51|139-preAction
                 // write pre-action user code here
 //GEN-LINE:|7-commandAction|52|139-postAction
-                // write post-action user code here
+                if (listManageWallets.getString(listManageWallets.getSelectedIndex()).endsWith("[active]"))
+                {
+                    getTfWalletName().setString(wallet.getName());
+                    getTfWalletOwner().setString(wallet.getOwner());
+                    getTfWalletBudgetValue().setString(String.valueOf(wallet.getBudget()));
+                    getChoiceWalletBudgetType().setSelectedIndex(wallet.getBudgetType(), true);
+                    editWallet= true;
+                    switchDisplayable(null, getFrmWallet());
+                } else
+                {
+                    displayError("Please activate the wallet first.", getListManageWallets());
+                }
             } else if (command == cmdNewWallet) {//GEN-LINE:|7-commandAction|53|137-preAction
                 getDisplay().setCurrent(getFrmWallet());
 //GEN-LINE:|7-commandAction|54|137-postAction
@@ -690,8 +760,7 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
             listPrintWallet = new List("Contents of the wallet", Choice.IMPLICIT);//GEN-BEGIN:|57-getter|1|57-postInit
             listPrintWallet.addCommand(getCmdBack());
             listPrintWallet.setCommandListener(this);
-            listPrintWallet.setFitPolicy(Choice.TEXT_WRAP_ON);
-            listPrintWallet.setSelectCommand(null);//GEN-END:|57-getter|1|57-postInit
+            listPrintWallet.setFitPolicy(Choice.TEXT_WRAP_ON);//GEN-END:|57-getter|1|57-postInit
             // write post-init user code here
         }//GEN-BEGIN:|57-getter|2|
         return listPrintWallet;
@@ -705,7 +774,27 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
     public void listPrintWalletAction() {//GEN-END:|57-action|0|57-preAction
         // enter pre-action user code here
         String __selectedString = getListPrintWallet().getString(getListPrintWallet().getSelectedIndex());//GEN-LINE:|57-action|1|57-postAction
-        // enter post-action user code here
+        currExpIndex= Integer.parseInt(__selectedString.substring(1, 2))-1;
+        currExp= (Expense) wallet.getExpenses().elementAt(currExpIndex);
+        getTfExpenseValue().setString(String.valueOf(currExp.getValue()));
+        getTfExpenseLocation().setString(currExp.getLocation());
+        getDfExpenseDate().setDate(Util.stringToDate(currExp.getDate()));
+        tfExpenseValue.setLabel("Value ["+settings[1]+"]");
+        displayCategoryList(getChoiceExpenseCategory());
+        
+        try
+        {
+            String[] cats= dal.getCategories();
+            for (int i=0; i<cats.length; i++)
+            {
+                if (cats[i].equals(currExp.getCategory()))
+                        getChoiceExpenseCategory().setSelectedIndex(i, true);
+            }
+        } catch (Exception e)
+        {
+            displayError(e.getMessage(), getListPrintWallet());
+        }
+        switchDisplayable(null, getFrmExpense());
     }//GEN-BEGIN:|57-action|2|
     //</editor-fold>//GEN-END:|57-action|2|
 
@@ -717,7 +806,7 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
     public Alert getAlert() {
         if (alert == null) {//GEN-END:|69-getter|0|69-preInit
             // write pre-init user code here
-            alert = new Alert("alert");//GEN-BEGIN:|69-getter|1|69-postInit
+            alert = new Alert("alert", null, null, AlertType.ERROR);//GEN-BEGIN:|69-getter|1|69-postInit
             alert.addCommand(getCmdOk());
             alert.setCommandListener(this);
             alert.setTimeout(Alert.FOREVER);//GEN-END:|69-getter|1|69-postInit
@@ -1569,7 +1658,7 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
 
         try
         {
-            dal.createWallet(w);
+            dal.writeWallet(w);
             displayWalletList(getListManageWallets());
         } catch (Exception e)
         {
@@ -1707,8 +1796,8 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
     private void displayWallet()
     {
         getLbActiveWallet().setText(wallet.getOwner()+"s " + wallet.getName());
-        getLbBudget().setText(wallet.getBudget()+" per "+wallet.getBudgetType());
-        getLbSpent().setLabel("Spent this "+wallet.getBudgetType()+": ");
+        getLbBudget().setText(wallet.getBudget()+" per "+wallet.getBudgetTypeString());
+        getLbSpent().setLabel("Spent this "+wallet.getBudgetTypeString()+": ");
         getLbSpent().setText(String.valueOf(wallet.getExpenseThisPeriod()));
         getLbDifference().setText(String.valueOf(wallet.getBudgetLeft()));
     }
@@ -1723,6 +1812,7 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
         alert.setTimeout(Alert.FOREVER);
         switchDisplayable(alert, nextDisplayable);
         System.out.println("ERROR: "+msg);
+        midletPaused= true;
     }
     
     private void displayWaitScreen(String msg)
