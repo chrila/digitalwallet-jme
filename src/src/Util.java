@@ -1,5 +1,6 @@
 package src;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
 
@@ -87,9 +88,9 @@ public final class Util
     public static final String FILE_HEADER = "Value,Category,Location,Date/Time";
     
     /**
-     * Converts a date to a String of the form YYYYMMddhhmm
+     * Converts a date to a String of the form YYYY-MM-dd hh:mm
      * @param date a Date object
-     * @return a String in the form YYYYMMddhhmm
+     * @return a String in the form YYYY-MM-dd hh:mm
      */
     public static String dateToString(Date date)
     {
@@ -141,6 +142,29 @@ public final class Util
         //dat+= date.toString().substring(17, 18);
 
         return dat;
+    }
+    
+    /**
+     * Converts a given String to a Date
+     * @param dateStr the date-string (format YYYY-MM-dd hh:mm)
+     * @return a Date
+     */
+    public static Date stringToDate(String dateStr)
+    {
+        Calendar now = Calendar.getInstance();
+        int yr= Integer.parseInt(dateStr.substring(0, 4));
+        int mon= Integer.parseInt(dateStr.substring(5, 7));
+        int day= Integer.parseInt(dateStr.substring(8, 10));
+        int hr= Integer.parseInt(dateStr.substring(11, 13));
+        int min= Integer.parseInt(dateStr.substring(14, 16));
+        
+        now.set(Calendar.YEAR, yr);
+        now.set(Calendar.MONTH, mon-1);
+        now.set(Calendar.DAY_OF_MONTH, day);
+        now.set(Calendar.HOUR_OF_DAY, hr);
+        now.set(Calendar.MINUTE, min);
+        
+        return now.getTime();
     }
 
     /**
