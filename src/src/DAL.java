@@ -87,7 +87,7 @@ public class DAL
      * @param w the Wallet object to be written
      * @throws Exception if an error occurs
      */
-    public void createWallet(Wallet w) throws Exception
+    public void writeWallet(Wallet w) throws Exception
     {
         try
         {
@@ -121,7 +121,7 @@ public class DAL
         try
         {
             RecordStore.deleteRecordStore(Util.createStoreName(w));
-            createWallet(w);
+            writeWallet(w);
         } catch (Exception e)
         {
             throw e;
@@ -148,7 +148,7 @@ public class DAL
 
         for (int i=0; i<list.length; i++)
         {
-            // the categories store should be dropped
+            // the categories and settings stores should be dropped
             if ((!list[i].equals("Category")) && (!list[i].equals("Settings")))
             {
                 newList[n]= list[i];
@@ -307,7 +307,7 @@ public class DAL
             // Create default stores
             updateCategories(Util.DEFAULT_CATEGORIES);
             updateSettings(Util.DEFAULT_SETTINGS);
-            createWallet(Util.DEFAULT_WALLET);
+            writeWallet(Util.DEFAULT_WALLET);
         } catch (Exception e)
         {
             throw e;
