@@ -9,7 +9,7 @@
 
 The aim of DigitalWallet is to provide a tool with which you can collect all the expenses you make while you can also watch your budget. You should always be able to do this, thats why i chose JME.
 
-Future versions will include a function to export the expenses to a .csv-file (comma-separated values) which can be sent over bluetooth for further processing.
+Wallets can be sent as .csv (comma-separated values) via bluetooth for further processing (MS Excel etc.).
 
 --------------
 2. Development
