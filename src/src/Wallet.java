@@ -177,7 +177,7 @@ public class Wallet
 
     /**
      * Removes a given expense from the collection
-     * @param expString the value of the expense.toString()
+     * @param expString the value of Expense.toString()
      * @return true, if the expense was found and removed, false if not.
      */
     public boolean removeExpense(String expString)
@@ -193,7 +193,39 @@ public class Wallet
 
         return false;
     }
+    
+    /**
+     * Removes a given expense from the collection
+     * @param index the position of the Expense in the expenses-vector
+     * @return true, if the expense was found and removed, false if not.
+     */
+    public boolean removeExpense(int index)
+    {
+        if ((index >= 0) && (index < expenses.size()))
+        {
+            expenses.removeElementAt(index);
+            return true;
+        } else
+            return false;
+    }
 
+    /**
+     * Updates a certain Expense, which is specified by index
+     * @param exp the updatet Expense
+     * @param index the position of the Expense in the expenses-vector
+     * @return 
+     */
+    public boolean updateExpense(Expense exp, int index)
+    {
+        if ((index >= 0) && (index < expenses.size()))
+        {
+            expenses.removeElementAt(index);
+            expenses.insertElementAt(exp, index);
+            return true;
+        } else
+            return false;
+    }
+    
     /**
      * Returns all expenses
      * @return a Vector including all records
@@ -205,7 +237,7 @@ public class Wallet
 
     /**
      * Returns the name of the Wallet
-     * @return
+     * @return the name of the Wallet
      */
     public String getName()
     {
@@ -214,7 +246,7 @@ public class Wallet
 
     /**
      * Returns the owner of the Wallet
-     * @return
+     * @return the owner of the Wallet
      */
     public String getOwner()
     {
@@ -223,7 +255,7 @@ public class Wallet
 
     /**
      * Returns the budget
-     * @return
+     * @return the budget value
      */
     public float getBudget()
     {
@@ -231,10 +263,19 @@ public class Wallet
     }
 
     /**
+     * Returns the budget type
+     * @return the budget type
+     */
+    public byte getBudgetType()
+    {
+        return budgetType;
+    }
+    
+    /**
      * Converts the budget type to a String
      * @return a String version of the budget type (e.g. day, month, etc)
      */
-    public String getBudgetType()
+    public String getBudgetTypeString()
     {
         switch (budgetType)
         {
