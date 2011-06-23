@@ -427,6 +427,7 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
                 tbEditValue.setConstraints(javax.microedition.lcdui.TextField.ANY);
                 tbEditValue.setString(listManageCategories.getString(listManageCategories.getSelectedIndex()));
                 tbEditValue.removeCommand(cmdInsertField);
+                editMode= Util.EDIT_MODE_CATEGORY;
                 switchDisplayable(null, tbEditValue);
 //GEN-LINE:|7-commandAction|40|86-postAction
                 // write post-action user code here
@@ -436,6 +437,8 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
                 tbEditValue.setTitle("Enter new category name: ");
                 tbEditValue.setConstraints(javax.microedition.lcdui.TextField.ANY);
                 tbEditValue.setString("");
+                tbEditValue.removeCommand(cmdInsertField);
+                editMode= Util.EDIT_MODE_CATEGORY;
                 switchDisplayable(null, tbEditValue);
 //GEN-LINE:|7-commandAction|42|84-postAction
                 // write post-action user code here
@@ -555,11 +558,15 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
                 agent.cancelInquiry(this);
                 switchToPreviousDisplayable();//GEN-LINE:|7-commandAction|74|208-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|75|7-postCommandAction
-        }//GEN-END:|7-commandAction|75|7-postCommandAction
+            } else if (command == cmdOk) {//GEN-LINE:|7-commandAction|75|236-preAction
+                switchDisplayable(null, getFrmMain());
+//GEN-LINE:|7-commandAction|76|236-postAction
+                // write post-action user code here
+            }//GEN-BEGIN:|7-commandAction|77|7-postCommandAction
+        }//GEN-END:|7-commandAction|77|7-postCommandAction
         // write post-action user code here
-    }//GEN-BEGIN:|7-commandAction|76|
-    //</editor-fold>//GEN-END:|7-commandAction|76|
+    }//GEN-BEGIN:|7-commandAction|78|
+    //</editor-fold>//GEN-END:|7-commandAction|78|
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cmdNewExpense ">//GEN-BEGIN:|20-getter|0|20-preInit
     /**
@@ -938,7 +945,7 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
             listSettings.append("Manage categories", null);
             listSettings.append("Manage wallets", null);
             listSettings.append("Set currency", null);
-            listSettings.append("Set output format (Expenses)", null);
+            listSettings.append("Set output format", null);
             listSettings.append("-RESET-", null);
             listSettings.append("About", null);
             listSettings.addCommand(getCmdBack());
@@ -981,12 +988,13 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
                 switchDisplayable(null, tbEditValue);
 //GEN-LINE:|109-action|6|181-postAction
                 // write post-action user code here
-            } else if (__selectedString.equals("Set output format (Expenses)")) {//GEN-LINE:|109-action|7|217-preAction
+            } else if (__selectedString.equals("Set output format")) {//GEN-LINE:|109-action|7|217-preAction
                 tbEditValue= getTbEditValue();
                 tbEditValue.setTitle("Output-format for expenses: ");
                 tbEditValue.setConstraints(javax.microedition.lcdui.TextField.ANY);
                 tbEditValue.setString(settings[2]);
                 editMode= Util.EDIT_MODE_FORMAT;
+                tbEditValue.addCommand(getCmdInsertField());
                 switchDisplayable(null, tbEditValue);
 //GEN-LINE:|109-action|8|217-postAction
                 // write post-action user code here
@@ -1341,6 +1349,7 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
             waitScreen = new WaitScreen(getDisplay());//GEN-BEGIN:|201-getter|1|201-postInit
             waitScreen.setTitle("Please wait...");
             waitScreen.addCommand(getCmdCancel());
+            waitScreen.addCommand(getCmdOk());
             waitScreen.setCommandListener(this);
             waitScreen.setImage(getImgWait());
             waitScreen.setText("Please wait...");
@@ -1817,6 +1826,8 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
     
     private void displayWaitScreen(String msg)
     {
+        getWaitScreen().removeCommand(cmdOk);
+        getWaitScreen().addCommand(getCmdCancel());
         getWaitScreen().setText(msg);
         switchDisplayable(null, getWaitScreen());
     }
@@ -2074,5 +2085,11 @@ public class DigitalWallet extends MIDlet implements CommandListener, DiscoveryL
     public void updateStatus(String status)
     {
         getWaitScreen().setTitle(status);
+        getWaitScreen().setText(status);
+        if (status.equals("File push complete"))
+        {
+            getWaitScreen().removeCommand(cmdCancel);
+            getWaitScreen().addCommand(getCmdOk());
+        }
     }
 }
