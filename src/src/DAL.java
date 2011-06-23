@@ -234,13 +234,16 @@ public class DAL
             rs= RecordStore.openRecordStore("Settings", true);
             String[] settings= new String[rs.getNumRecords()];
 
-            int i=settings.length-1;
             RecordEnumeration re= rs.enumerateRecords(null, null, true);
 
+            String s;
             while (re.hasNextElement())
             {
-                settings[i]= new String(re.nextRecord());
-                i--;
+                s= new String(re.nextRecord());
+                int index= (Integer.valueOf(s.substring(0, 1))).intValue();
+                settings[index]= s.substring(2, s.length());
+                //System.out.println("Index: "+s.substring(0, 1));
+                //System.out.println("Value: "+s.substring(2, s.length()));
             }
 
             rs.closeRecordStore();
@@ -254,7 +257,9 @@ public class DAL
     }
 
     /**
-     * Updates the settings table
+     * Updates the settings table. Entries are stored with leading index
+     * { 1_Active wallet, 2_currency, 3_expense output format }, because it seems
+     * that different phones read/write RMS data in different order!
      * @param settings a String array containing the settings
      * @throws Exception if anything doesn't work
      */
@@ -271,6 +276,7 @@ public class DAL
 
             for (int i=0; i<settings.length; i++)
             {
+                settings[i]= String.valueOf(i)+"_"+settings[i];
                 byte[] b= settings[i].getBytes();
                 rs.addRecord(b, 0, b.length);
             }
